@@ -6,8 +6,14 @@ class Settings(BaseSettings):
     BOT_TOKEN: str
     ADMIN_IDS: list[int] = Field(default_factory=list)
 
-    GROQ_API_KEY: str
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    # LLM — works with any OpenAI-compatible API
+    # OpenAI:   base_url=https://api.openai.com/v1,        model=gpt-4o-mini
+    # DeepSeek: base_url=https://api.deepseek.com/v1,      model=deepseek-chat
+    # Groq:     base_url=https://api.groq.com/openai/v1,   model=llama-3.3-70b-versatile
+    # Ollama:   base_url=http://localhost:11434/v1,         model=llama3.2
+    LLM_API_KEY: str
+    LLM_BASE_URL: str = "https://api.openai.com/v1"
+    LLM_MODEL: str = "gpt-4o-mini"
 
     # Contact shown when bot doesn't know the answer
     SUPPORT_USERNAME: str = "@manager"

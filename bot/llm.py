@@ -1,16 +1,27 @@
-"""Groq LLM calls."""
+"""LLM calls via OpenAI-compatible API.
+
+Works with any provider that supports the OpenAI API format:
+- OpenAI (gpt-4o, gpt-4o-mini)
+- DeepSeek (deepseek-chat)
+- Groq (llama-3.3-70b-versatile)
+- Ollama (llama3.2, mistral, etc.) — set LLM_BASE_URL=http://localhost:11434/v1
+- LM Studio — set LLM_BASE_URL=http://localhost:1234/v1
+"""
 import logging
-from groq import AsyncGroq
+from openai import AsyncOpenAI
 from bot.config import settings
 
 logger = logging.getLogger(__name__)
-_client: AsyncGroq | None = None
+_client: AsyncOpenAI | None = None
 
 
-def get_client() -> AsyncGroq:
+def get_client() -> AsyncOpenAI:
     global _client
     if _client is None:
-        _client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+        _client = AsyncOpenAI(
+            api_key=settings.LLM_API_KEY,
+            base_url=settings.LLM_BASE_URL,
+        )
     return _client
 
 
@@ -40,12 +51,12 @@ async def ask(question: str, context_chunks: list[dict], history: list[dict]) ->
 
     try:
         response = await get_client().chat.completions.create(
-            model=settings.GROQ_MODEL,
+            model=settings.LLM_MODEL,
             messages=messages,
             max_tokens=512,
             temperature=0.2,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        logger.error("Groq API error: %s", e)
+        logger.error("LLM API error: %s", e)
         return "НЕ_ЗНАЮ"

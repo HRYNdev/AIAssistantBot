@@ -1,0 +1,85 @@
+# 🤖 AI Assistant Bot
+
+Telegram-бот, который отвечает на вопросы клиентов на основе базы знаний компании. Подключаешь свои документы (TXT, PDF, DOCX) — бот знает всё про твой бизнес.
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue) ![aiogram](https://img.shields.io/badge/aiogram-3.x-blue) ![Groq](https://img.shields.io/badge/LLM-Groq-orange) ![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-green)
+
+## Как работает
+
+1. Документы из папки `knowledge_base/` разбиваются на фрагменты и индексируются в ChromaDB
+2. На вопрос пользователя ищутся релевантные фрагменты через векторный поиск
+3. Groq LLM формирует ответ строго на основе найденного контекста
+4. Если ответа нет — бот говорит "не знаю" и даёт контакт менеджера
+
+## Возможности
+
+- 📚 **База знаний** — TXT, PDF, DOCX файлы в папке `knowledge_base/`
+- 🔍 **Векторный поиск** — ChromaDB + sentence-transformers
+- 💬 **Контекст диалога** — помнит последние 5 сообщений
+- ❓ **Лог пробелов** — сохраняет вопросы без ответа для улучшения базы
+- 🔄 **Горячая перезагрузка** — `/reload` обновляет базу без рестарта
+
+## Быстрый старт
+
+```bash
+cp .env.example .env
+# заполни BOT_TOKEN и GROQ_API_KEY
+
+# Добавь свои документы в knowledge_base/
+# Поддерживаются: .txt, .pdf, .docx
+
+docker compose up -d
+```
+
+Или без Docker:
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+## Конфигурация `.env`
+
+```env
+BOT_TOKEN=your_token
+ADMIN_IDS=[123456789]
+GROQ_API_KEY=your_groq_key
+SUPPORT_USERNAME=@manager   # контакт если бот не знает ответа
+HISTORY_DEPTH=5             # глубина контекста диалога
+MIN_RELEVANCE=0.4           # порог релевантности (0-1)
+```
+
+## Команды
+
+| Команда | Доступ | Описание |
+|---------|--------|----------|
+| `/start` | все | Начало диалога |
+| `/clear` | все | Очистить историю |
+| `/reload` | админ | Перезагрузить базу знаний |
+| `/gaps` | админ | Вопросы без ответа |
+
+## Структура
+
+```
+├── main.py
+├── bot/
+│   ├── config.py         # настройки
+│   ├── db.py             # история диалогов, лог пробелов
+│   ├── knowledge.py      # загрузка документов + ChromaDB
+│   ├── llm.py            # Groq API
+│   └── handlers/
+│       ├── chat.py       # обработка вопросов
+│       └── admin.py      # /reload, /gaps
+├── knowledge_base/       # сюда кладёшь свои документы
+│   ├── about.txt         # пример: о компании
+│   ├── prices.txt        # пример: прайс-лист
+│   └── faq.txt           # пример: частые вопросы
+└── docker-compose.yml
+```
+
+## Стек
+
+- **aiogram 3** — Telegram бот
+- **Groq** — быстрый LLM (llama-3.3-70b)
+- **ChromaDB** — векторная база данных
+- **sentence-transformers** — эмбеддинги (all-MiniLM-L6-v2)
+- **pypdf / python-docx** — чтение PDF и DOCX
